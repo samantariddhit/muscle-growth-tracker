@@ -1,0 +1,15 @@
+{
+  "name": "Physique Tracker",
+  "short_name": "Physique Tracker",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "Gemini_Generated_Image_mkx3n0mkx3n0mkx3.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
