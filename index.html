@@ -6,7 +6,7 @@
     <title>Physique Tracker - Cloud Sync</title>
     <!-- PWA Manifest & Icon -->
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="Gemini_Generated_Image_mkx3n0mkx3n0mkx3.png">
+    <link rel="icon" href="icon.png">
     <meta name="theme-color" content="#09090b">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client CDN -->
@@ -18,7 +18,7 @@
         <!-- Header -->
         <header class="text-center space-y-1">
             <h1 class="text-2xl font-bold tracking-tight">Physique Tracker</h1>
-            <p class="text-xs text-zinc-400">Target: Tom Holland Aesthetic Build</p>
+            <p class="text-xs text-zinc-400">Target: Tom Holland Aesthetic Build (10-12% Body Fat)</p>
         </header>
 
         <!-- Input Form Card -->
@@ -44,7 +44,7 @@
                     </div>
                     <div>
                         <label class="block text-xs text-zinc-400 mb-1">Waist (inches)</label>
-                        <input type="number" step="0.1" id="waist" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600" oninput="calculateBodyFat()">
+                        <input type="number" step="0.1" id="waist" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600" oninput="calculateBodyFatLocally()">
                     </div>
                 </div>
 
@@ -52,7 +52,7 @@
                 <div class="grid grid-cols-2 gap-3 pt-1 border-t border-zinc-800">
                     <div>
                         <label class="block text-xs text-zinc-400 mb-1">Neck (inches)</label>
-                        <input type="number" step="0.1" id="neck" placeholder="Optional" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600" oninput="calculateBodyFat()">
+                        <input type="number" step="0.1" id="neck" placeholder="Optional" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600" oninput="calculateBodyFatLocally()">
                     </div>
                     <div>
                         <label class="block text-xs text-zinc-400 mb-1">Est. Body Fat</label>
@@ -100,28 +100,32 @@
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Target Tom Holland Aesthetic Goals
-        const targetPhysique = { weight: 70, chest: 40, arms: 14.5, waist: 30 };
+        // Target Tom Holland Aesthetic Goals (Including ~11% body fat target)
+        const targetPhysique = { weight: 70, chest: 40, arms: 14.5, waist: 30, bodyFat: 11 };
 
-        // Simple Body Fat Estimator (U.S. Navy Method approximation for men using waist & neck in inches)
-        function calculateBodyFat() {
+        function calculateBodyFat(waist, neck) {
+            if (waist && neck && waist > neck) {
+                let estBf = 86.010 * (Math.log10(waist - neck)) - 70.041 * (Math.log10(68)) + 36.76;
+                if (estBf > 3 && estBf < 50) {
+                    return parseFloat(estBf.toFixed(1));
+                }
+            }
+            return null;
+        }
+
+        function calculateBodyFatLocally() {
             const waist = parseFloat(document.getElementById('waist').value);
             const neck = parseFloat(document.getElementById('neck').value);
             const bfResult = document.getElementById('bfResult');
+            const bfVal = calculateBodyFat(waist, neck);
 
-            if (waist && neck && waist > neck) {
-                // Simplified estimation formula for men: 86.010 * log10(waist - neck) - 70.041 * log10(height_inches) + 36.76 (using average height ~68 inches if not specified)
-                // Using a clean standard metric approximation based on waist-to-neck ratio for quick real-time UI feedback:
-                let estBf = 86.010 * (Math.log10(waist - neck)) - 70.041 * (Math.log10(68)) + 36.76;
-                if (estBf > 3 && estBf < 50) {
-                    bfResult.textContent = estBf.toFixed(1) + '%';
-                    bfResult.className = 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-emerald-400 font-medium flex items-center';
-                    return estBf.toFixed(1);
-                }
+            if (bfVal !== null) {
+                bfResult.textContent = bfVal + '%';
+                bfResult.className = 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-emerald-400 font-medium flex items-center';
+            } else {
+                bfResult.textContent = '-- %';
+                bfResult.className = 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-400 flex items-center';
             }
-            bfResult.textContent = '-- %';
-            bfResult.className = 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-400 flex items-center';
-            return null;
         }
 
         async function loadData() {
@@ -170,6 +174,9 @@
 
         function renderRemaining(latest) {
             const container = document.getElementById('remainingStats');
+            
+            // Note: Since neck isn't stored in the main table row yet, we default estimate or check if user input it
+            // Let's display regular metrics + estimated body fat target comparison
             const metrics = [
                 { key: 'weight', label: 'Weight', unit: 'kg' },
                 { key: 'chest', label: 'Chest', unit: 'in' },
@@ -177,18 +184,28 @@
                 { key: 'waist', label: 'Waist (Goal max)', unit: 'in' }
             ];
 
-            container.innerHTML = metrics.map(m => {
+            let htmlContent = metrics.map(m => {
                 const diff = (targetPhysique[m.key] - latest[m.key]).toFixed(1);
                 const color = diff > 0 ? 'text-amber-400' : 'text-emerald-400';
-                const text = diff > 0 ? `Need +${diff} ${m.unit} more` : `Target reached! (${Math.abs(diff)} ${m.unit} past target)`;
+                const text = diff > 0 ? `Need +${diff}${m.unit} more` : `Target reached! (${Math.abs(diff)}${m.unit} past target)`;
                 
                 return `
                     <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
                         <span class="text-zinc-400">${m.label}</span>
                         <span class="font-medium ${color}">${text}</span>
                     </div>
-                `;
+                ;
             }).join('');
+
+            // Add Body Fat comparison row assuming standard 11% target midpoint
+            htmlContent += `
+                <div class="flex justify-between items-center pt-1">
+                    <span class="text-zinc-400">Body Fat Goal (~11%)</span>
+                    <span class="font-medium text-zinc-300 text-xs">Target: 10% - 12%</span>
+                </div>
+            `;
+
+            container.innerHTML = htmlContent;
         }
 
         function renderHistory(logs) {
