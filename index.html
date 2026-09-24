@@ -43,11 +43,21 @@
                         <input type="number" step="0.1" id="targetArms" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-3 gap-2">
                     <div>
-                        <label class="block text-[10px] text-zinc-400 mb-1">Max Waist (in)</label>
+                        <label class="block text-[10px] text-zinc-400 mb-1">Target Thighs</label>
+                        <input type="number" step="0.1" id="targetThighs" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 mb-1">Target Calves</label>
+                        <input type="number" step="0.1" id="targetCalves" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 mb-1">Max Waist</label>
                         <input type="number" step="0.1" id="targetWaist" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
                     </div>
+                </div>
+                <div class="grid grid-cols-1 gap-2">
                     <div>
                         <label class="block text-[10px] text-zinc-400 mb-1">Target BF (%)</label>
                         <input type="number" step="0.1" id="targetBf" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
@@ -86,6 +96,17 @@
                     <div>
                         <label class="block text-xs text-zinc-400 mb-1">Arms (inches)</label>
                         <input type="number" step="0.1" id="arms" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Thighs (inches)</label>
+                        <input type="number" step="0.1" id="thighs" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Calves (inches)</label>
+                        <input type="number" step="0.1" id="calves" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
                     </div>
                 </div>
 
@@ -145,6 +166,8 @@
             weight: 65, 
             chest: 40, 
             arms: 14.5, 
+            thighs: 22,
+            calves: 14,
             waist: 30, 
             bodyFat: 11
         };
@@ -153,6 +176,8 @@
             document.getElementById('targetWeight').value = customTarget.weight;
             document.getElementById('targetChest').value = customTarget.chest;
             document.getElementById('targetArms').value = customTarget.arms;
+            document.getElementById('targetThighs').value = customTarget.thighs || 22;
+            document.getElementById('targetCalves').value = customTarget.calves || 14;
             document.getElementById('targetWaist').value = customTarget.waist;
             document.getElementById('targetBf').value = customTarget.bodyFat;
             document.getElementById('headerTargetLabel').textContent = `Target: ${customTarget.weight}kg | ${customTarget.bodyFat}% BF Goal`;
@@ -175,6 +200,8 @@
                 weight: parseFloat(document.getElementById('targetWeight').value) || 65,
                 chest: parseFloat(document.getElementById('targetChest').value) || 40,
                 arms: parseFloat(document.getElementById('targetArms').value) || 14.5,
+                thighs: parseFloat(document.getElementById('targetThighs').value) || 22,
+                calves: parseFloat(document.getElementById('targetCalves').value) || 14,
                 waist: parseFloat(document.getElementById('targetWaist').value) || 30,
                 bodyFat: parseFloat(document.getElementById('targetBf').value) || 11
             };
@@ -254,6 +281,8 @@
                 bmi: parseFloat(currentBmi.toFixed(1)),
                 chest: parseFloat(document.getElementById('chest').value),
                 arms: parseFloat(document.getElementById('arms').value),
+                thighs: parseFloat(document.getElementById('thighs').value),
+                calves: parseFloat(document.getElementById('calves').value),
                 waist: parseFloat(document.getElementById('waist').value)
             };
 
@@ -272,16 +301,19 @@
         function renderRemaining(latest) {
             const container = document.getElementById('remainingStats');
             
-            // Direct comparison against your explicit custom target weight, chest, arms, waist
             const metrics = [
                 { key: 'weight', label: 'Weight Goal', unit: 'kg' },
                 { key: 'chest', label: 'Chest Goal', unit: 'in' },
                 { key: 'arms', label: 'Arms Goal', unit: 'in' },
+                { key: 'thighs', label: 'Thighs Goal', unit: 'in' },
+                { key: 'calves', label: 'Calves Goal', unit: 'in' },
                 { key: 'waist', label: 'Waist Limit', unit: 'in' }
             ];
 
             let htmlContent = metrics.map(m => {
-                const diff = (customTarget[m.key] - latest[m.key]).toFixed(1);
+                const targetVal = customTarget[m.key] !== undefined ? customTarget[m.key] : 0;
+                const latestVal = latest[m.key] !== undefined ? latest[m.key] : 0;
+                const diff = (targetVal - latestVal).toFixed(1);
                 const color = diff > 0 ? 'text-amber-400' : 'text-emerald-400';
                 const text = diff > 0 ? `Need +${diff} ${m.unit} more` : `Target reached!`;
                 
@@ -311,15 +343,19 @@
                 const dateStr = new Date(log.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const htDisplay = log.height_ft ? `${log.height_ft}'${log.height_in}"` : '';
                 return `
-                    <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800 space-y-1">
+                    <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800 space-y-2">
                         <div class="flex justify-between text-xs font-semibold text-zinc-300">
                             <span>${dateStr}</span>
                             <span class="text-zinc-500">${htDisplay}</span>
                         </div>
-                        <div class="grid grid-cols-4 gap-2 text-xs text-zinc-400">
+                        <div class="grid grid-cols-3 gap-2 text-xs text-zinc-400">
                             <div>Wt: <span class="text-zinc-200">${log.weight}kg</span></div>
-                            <div>Ch: <span class="text-zinc-200">${log.chest}"</span></div>
-                            <div>Ar: <span class="text-zinc-200">${log.arms}"</span></div>
+                            <div>Ch: <span class="text-zinc-200">${log.chest || '--'}"</span></div>
+                            <div>Ar: <span class="text-zinc-200">${log.arms || '--'}"</span></div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-xs text-zinc-400">
+                            <div>Th: <span class="text-zinc-200">${log.thighs || '--'}"</span></div>
+                            <div>Cl: <span class="text-zinc-200">${log.calves || '--'}"</span></div>
                             <div>Ws: <span class="text-zinc-200">${log.waist}"</span></div>
                         </div>
                         <div class="text-[10px] text-right text-zinc-500 pt-1 border-t border-zinc-900">
