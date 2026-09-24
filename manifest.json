@@ -9,7 +9,8 @@
     {
       "src": "Gemini_Generated_Image_mkx3n0mkx3n0mkx3.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
