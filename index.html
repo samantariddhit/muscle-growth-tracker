@@ -4,6 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Physique Tracker - Cloud Sync</title>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physique Tracker - Cloud Sync</title>
+	<!-- Android/Chrome App Icon & Theme -->
+	<link rel="icon" href="Gemini_Generated_Image_mkx3n0mkx3n0mkx3.png">
+	<meta name="theme-color" content="#09090b">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased flex flex-col items-center py-8 px-4">
+
+    <div class="w-full max-w-md space-y-6">
+        <!-- Header -->
+        <header class="text-center space-y-1">
+            <h1 class="text-2xl font-bold tracking-tight">Physique Tracker</h1>
+            <p class="text-xs text-zinc-400">Target: Tom Holland Aesthetic Build</p>
+        </header>
+
+        <!-- Input Form Card -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-xl space-y-4">
+            <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wider">Log New Measurements</h2>
+            
+            <form id="trackerForm" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Weight (kg)</label>
+                        <input type="number" step="0.1" id="weight" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Chest (inches)</label>
+                        <input type="number" step="0.1" id="chest" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Arms (inches)</label>
+                        <input type="number" step="0.1" id="arms" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Waist (inches)</label>
+                        <input type="number" step="0.1" id="waist" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full mt-2 bg-zinc-100 text-zinc-950 font-medium py-2.5 rounded-lg text-sm hover:bg-zinc-200 transition">
+                    Save to Cloud & Compare
+                </button>
+            </form>
+        </div>
+
+        <!-- Remaining Growth Target Card -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-xl space-y-4">
+            <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wider">Remaining to Dream Physique</h2>
+            <div id="remainingStats" class="space-y-3 text-sm">
+                <p class="text-xs text-zinc-500 italic">Loading records from Supabase...</p>
+            </div>
+        </div>
+
+        <!-- Previous Record History -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-xl space-y-3">
+            <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wider">Previous History</h2>
+            <div id="historyList" class="space-y-2 text-sm text-zinc-400">
+                <p class="text-xs text-zinc-500 italic">Past entries will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Credentials Configured
+        const SUPABASE_URL = 'https://ystdedlbfrtgddepszgu.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_fsK-pY6uGUqP2TUnpP953g_fg3Fd-i5';
+
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Target Tom Holland Aesthetic Goals
+        const targetPhysique = { weight: 70, chest: 40, arms: 14.5, waist: 30 };
+
+        async function loadData() {
+            const { data: logs, error } = await _supabase
+                .from('physique_logs')
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error('Error fetching logs:', error);
+                document.getElementById('remainingStats').innerHTML = `<p class="text-xs text-red-400">Error connecting to Supabase. Make sure your table 'physique_logs' exists.</p>`;
+                return;
+            }
+
+            renderHistory(logs);
+            if (logs && logs.length > 0) {
+                renderRemaining(logs[logs.length - 1]); // Latest log
+            } else {
+                document.getElementById('remainingStats').innerHTML = `<p class="text-xs text-zinc-500 italic">No records found. Add your first log above!</p>`;
+            }
+        }
+
+        document.getElementById('trackerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.textContent = 'Saving...';
+
+            const newEntry = {
+                weight: parseFloat(document.getElementById('weight').value),
+                chest: parseFloat(document.getElementById('chest').value),
+                arms: parseFloat(document.getElementById('arms').value),
+                waist: parseFloat(document.getElementById('waist').value)
+            };
+
+            const { error } = await _supabase.from('physique_logs').insert([newEntry]);
+
+            if (error) {
+                alert('Error saving data: ' + error.message);
+            } else {
+                this.reset();
+                await loadData();
+            }
+            submitBtn.textContent = 'Save to Cloud & Compare';
+        });
+
+        function renderRemaining(latest) {
+            const container = document.getElementById('remainingStats');
+            const metrics = [
+                { key: 'weight', label: 'Weight', unit: 'kg' },
+                { key: 'chest', label: 'Chest', unit: 'in' },
+                { key: 'arms', label: 'Arms', unit: 'in' },
+                { key: 'waist', label: 'Waist (Goal max)', unit: 'in' }
+            ];
+
+            container.innerHTML = metrics.map(m => {
+                const diff = (targetPhysique[m.key] - latest[m.key]).toFixed(1);
+                const color = diff > 0 ? 'text-amber-400' : 'text-emerald-400';
+                const text = diff > 0 ? `Need +${diff} ${m.unit} more` : `Target reached! (${Math.abs(diff)} ${m.unit} past target)`;
+                
+                return `
+                    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+                        <span class="text-zinc-400">${m.label}</span>
+                        <span class="font-medium ${color}">${text}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderHistory(logs) {
+            const container = document.getElementById('historyList');
+            if (!logs || logs.length === 0) return;
+
+            container.innerHTML = logs.slice().reverse().map(log => {
+                const dateStr = new Date(log.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                return `
+                    <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800 space-y-1">
+                        <div class="text-xs font-semibold text-zinc-300">${dateStr}</div>
+                        <div class="grid grid-cols-4 gap-2 text-xs text-zinc-400">
+                            <div>Wt: <span class="text-zinc-200">${log.weight}kg</span></div>
+                            <div>Ch: <span class="text-zinc-200">${log.chest}"</span></div>
+                            <div>Ar: <span class="text-zinc-200">${log.arms}"</span></div>
+                            <div>Ws: <span class="text-zinc-200">${log.waist}"</span></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
