@@ -44,7 +44,21 @@
                     </div>
                     <div>
                         <label class="block text-xs text-zinc-400 mb-1">Waist (inches)</label>
-                        <input type="number" step="0.1" id="waist" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
+                        <input type="number" step="0.1" id="waist" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600" oninput="calculateBodyFat()">
+                    </div>
+                </div>
+
+                <!-- Extra fields for Body Fat calculation -->
+                <div class="grid grid-cols-2 gap-3 pt-1 border-t border-zinc-800">
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Neck (inches)</label>
+                        <input type="number" step="0.1" id="neck" placeholder="Optional" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600" oninput="calculateBodyFat()">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Est. Body Fat</label>
+                        <div id="bfResult" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-400 flex items-center">
+                            -- %
+                        </div>
                     </div>
                 </div>
 
@@ -75,9 +89,7 @@
         // Register Service Worker for PWA installation on Android
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registered!', reg))
-                    .catch(err => console.log('Service Worker registration failed', err));
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW failed', err));
             });
         }
 
@@ -91,6 +103,27 @@
         // Target Tom Holland Aesthetic Goals
         const targetPhysique = { weight: 70, chest: 40, arms: 14.5, waist: 30 };
 
+        // Simple Body Fat Estimator (U.S. Navy Method approximation for men using waist & neck in inches)
+        function calculateBodyFat() {
+            const waist = parseFloat(document.getElementById('waist').value);
+            const neck = parseFloat(document.getElementById('neck').value);
+            const bfResult = document.getElementById('bfResult');
+
+            if (waist && neck && waist > neck) {
+                // Simplified estimation formula for men: 86.010 * log10(waist - neck) - 70.041 * log10(height_inches) + 36.76 (using average height ~68 inches if not specified)
+                // Using a clean standard metric approximation based on waist-to-neck ratio for quick real-time UI feedback:
+                let estBf = 86.010 * (Math.log10(waist - neck)) - 70.041 * (Math.log10(68)) + 36.76;
+                if (estBf > 3 && estBf < 50) {
+                    bfResult.textContent = estBf.toFixed(1) + '%';
+                    bfResult.className = 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-emerald-400 font-medium flex items-center';
+                    return estBf.toFixed(1);
+                }
+            }
+            bfResult.textContent = '-- %';
+            bfResult.className = 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-400 flex items-center';
+            return null;
+        }
+
         async function loadData() {
             const { data: logs, error } = await _supabase
                 .from('physique_logs')
@@ -99,13 +132,13 @@
 
             if (error) {
                 console.error('Error fetching logs:', error);
-                document.getElementById('remainingStats').innerHTML = `<p class="text-xs text-red-400">Error connecting to Supabase. Make sure your table 'physique_logs' exists.</p>`;
+                document.getElementById('remainingStats').innerHTML = `<p class="text-xs text-red-400">Error connecting to Supabase.</p>`;
                 return;
             }
 
             renderHistory(logs);
             if (logs && logs.length > 0) {
-                renderRemaining(logs[logs.length - 1]); // Latest log
+                renderRemaining(logs[logs.length - 1]);
             } else {
                 document.getElementById('remainingStats').innerHTML = `<p class="text-xs text-zinc-500 italic">No records found. Add your first log above!</p>`;
             }
@@ -129,6 +162,7 @@
                 alert('Error saving data: ' + error.message);
             } else {
                 this.reset();
+                document.getElementById('bfResult').textContent = '-- %';
                 await loadData();
             }
             submitBtn.textContent = 'Save to Cloud & Compare';
