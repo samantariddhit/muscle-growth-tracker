@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Physique Tracker - Cloud Sync</title>
+    <!-- PWA Manifest & Icon -->
     <link rel="manifest" href="manifest.json">
-    <!-- Android/Chrome App Icon & Theme -->
     <link rel="icon" href="Gemini_Generated_Image_mkx3n0mkx3n0mkx3.png">
     <meta name="theme-color" content="#09090b">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -72,6 +72,15 @@
     </div>
 
     <script>
+        // Register Service Worker for PWA installation on Android
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered!', reg))
+                    .catch(err => console.log('Service Worker registration failed', err));
+            });
+        }
+
         // Supabase Credentials Configured
         const SUPABASE_URL = 'https://ystdedlbfrtgddepszgu.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_fsK-pY6uGUqP2TUnpP953g_fg3Fd-i5';
