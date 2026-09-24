@@ -18,8 +18,46 @@
         <!-- Header -->
         <header class="text-center space-y-1">
             <h1 class="text-2xl font-bold tracking-tight">Physique Tracker</h1>
-            <p class="text-xs text-zinc-400">Target: Tom Holland Aesthetic Build (10-12% Body Fat)</p>
+            <p id="headerTargetLabel" class="text-xs text-zinc-400">Target: Custom Dream Physique</p>
         </header>
+
+        <!-- Custom Targets Configuration Card -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl space-y-3">
+            <div class="flex justify-between items-center cursor-pointer" onclick="toggleTargetEditor()">
+                <h2 class="text-xs font-semibold text-zinc-300 uppercase tracking-wider">🎯 Set Your Dream Targets</h2>
+                <span id="toggleText" class="text-xs text-zinc-500 hover:text-zinc-300 underline">Edit Goals</span>
+            </div>
+            
+            <div id="targetEditorContainer" class="hidden space-y-3 pt-2 border-t border-zinc-800">
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 mb-1">Target Wt (kg)</label>
+                        <input type="number" step="0.1" id="targetWeight" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 mb-1">Target Chest</label>
+                        <input type="number" step="0.1" id="targetChest" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 mb-1">Target Arms</label>
+                        <input type="number" step="0.1" id="targetArms" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 mb-1">Max Waist (in)</label>
+                        <input type="number" step="0.1" id="targetWaist" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 mb-1">Target Body Fat (%)</label>
+                        <input type="number" step="0.1" id="targetBf" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
+                    </div>
+                </div>
+                <button onclick="saveCustomTargets()" class="w-full bg-zinc-800 text-zinc-200 font-medium py-1.5 rounded-lg text-xs hover:bg-zinc-700 transition">
+                    Save Custom Targets
+                </button>
+            </div>
+        </div>
 
         <!-- Input Form Card -->
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-xl space-y-4">
@@ -100,8 +138,49 @@
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Target Tom Holland Aesthetic Goals (Including ~11% body fat target)
-        const targetPhysique = { weight: 70, chest: 40, arms: 14.5, waist: 30, bodyFat: 11 };
+        // Load or initialize custom targets from LocalStorage (defaults to Tom Holland build if not set)
+        let customTarget = JSON.parse(localStorage.getItem('userPhysiqueTarget')) || { 
+            weight: 70, 
+            chest: 40, 
+            arms: 14.5, 
+            waist: 30, 
+            bodyFat: 11 
+        };
+
+        function initTargetsUI() {
+            document.getElementById('targetWeight').value = customTarget.weight;
+            document.getElementById('targetChest').value = customTarget.chest;
+            document.getElementById('targetArms').value = customTarget.arms;
+            document.getElementById('targetWaist').value = customTarget.waist;
+            document.getElementById('targetBf').value = customTarget.bodyFat;
+            document.getElementById('headerTargetLabel').textContent = `Target: Custom Dream Physique (${customTarget.bodyFat}% BF Goal)`;
+        }
+
+        function toggleTargetEditor() {
+            const editor = document.getElementById('targetEditorContainer');
+            const toggleText = document.getElementById('toggleText');
+            if (editor.classList.contains('hidden')) {
+                editor.classList.remove('hidden');
+                toggleText.textContent = 'Close';
+            } else {
+                editor.classList.add('hidden');
+                toggleText.textContent = 'Edit Goals';
+            }
+        }
+
+        function saveCustomTargets() {
+            customTarget = {
+                weight: parseFloat(document.getElementById('targetWeight').value) || 70,
+                chest: parseFloat(document.getElementById('targetChest').value) || 40,
+                arms: parseFloat(document.getElementById('targetArms').value) || 14.5,
+                waist: parseFloat(document.getElementById('targetWaist').value) || 30,
+                bodyFat: parseFloat(document.getElementById('targetBf').value) || 11
+            };
+            localStorage.setItem('userPhysiqueTarget', JSON.stringify(customTarget));
+            initTargetsUI();
+            toggleTargetEditor();
+            loadData(); // Refresh remaining stats immediately
+        }
 
         function calculateBodyFat(waist, neck) {
             if (waist && neck && waist > neck) {
@@ -175,8 +254,6 @@
         function renderRemaining(latest) {
             const container = document.getElementById('remainingStats');
             
-            // Note: Since neck isn't stored in the main table row yet, we default estimate or check if user input it
-            // Let's display regular metrics + estimated body fat target comparison
             const metrics = [
                 { key: 'weight', label: 'Weight', unit: 'kg' },
                 { key: 'chest', label: 'Chest', unit: 'in' },
@@ -185,23 +262,23 @@
             ];
 
             let htmlContent = metrics.map(m => {
-                const diff = (targetPhysique[m.key] - latest[m.key]).toFixed(1);
+                const diff = (customTarget[m.key] - latest[m.key]).toFixed(1);
                 const color = diff > 0 ? 'text-amber-400' : 'text-emerald-400';
-                const text = diff > 0 ? `Need +${diff}${m.unit} more` : `Target reached! (${Math.abs(diff)}${m.unit} past target)`;
+                const text = diff > 0 ? `Need +${diff} ${m.unit} more` : `Target reached! (${Math.abs(diff)} ${m.unit} past target)`;
                 
                 return `
                     <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
                         <span class="text-zinc-400">${m.label}</span>
                         <span class="font-medium ${color}">${text}</span>
                     </div>
-                ;
+                `;
             }).join('');
 
-            // Add Body Fat comparison row assuming standard 11% target midpoint
+            // Add custom Body Fat target comparison row
             htmlContent += `
                 <div class="flex justify-between items-center pt-1">
-                    <span class="text-zinc-400">Body Fat Goal (~11%)</span>
-                    <span class="font-medium text-zinc-300 text-xs">Target: 10% - 12%</span>
+                    <span class="text-zinc-400">Body Fat Goal</span>
+                    <span class="font-medium text-emerald-400 text-xs">Target: ${customTarget.bodyFat}%</span>
                 </div>
             `;
 
@@ -228,7 +305,10 @@
             }).join('');
         }
 
-        window.onload = loadData;
+        window.onload = () => {
+            initTargetsUI();
+            loadData();
+        };
     </script>
 </body>
 </html>
