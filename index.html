@@ -35,27 +35,31 @@
                         <input type="number" step="0.1" id="targetWeight" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-[10px] text-zinc-400 mb-1">Target Height (in)</label>
-                        <input type="number" step="0.5" id="targetHeight" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none" placeholder="e.g. 68">
+                        <label class="block text-[10px] text-zinc-400 mb-1">Target Ht (ft)</label>
+                        <input type="number" id="targetHeightFt" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
                     </div>
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 mb-1">Target Ht (in)</label>
+                        <input type="number" id="targetHeightIn" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
                     <div>
                         <label class="block text-[10px] text-zinc-400 mb-1">Target Chest</label>
                         <input type="number" step="0.1" id="targetChest" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
                     </div>
-                </div>
-                <div class="grid grid-cols-3 gap-2">
                     <div>
                         <label class="block text-[10px] text-zinc-400 mb-1">Target Arms</label>
                         <input type="number" step="0.1" id="targetArms" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-[10px] text-zinc-400 mb-1">Max Waist (in)</label>
+                        <label class="block text-[10px] text-zinc-400 mb-1">Max Waist</label>
                         <input type="number" step="0.1" id="targetWaist" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
                     </div>
-                    <div>
-                        <label class="block text-[10px] text-zinc-400 mb-1">Target BF (%)</label>
-                        <input type="number" step="0.1" id="targetBf" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
-                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] text-zinc-400 mb-1">Target Body Fat (%)</label>
+                    <input type="number" step="0.1" id="targetBf" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-zinc-100 focus:outline-none">
                 </div>
                 <button onclick="saveCustomTargets()" class="w-full bg-zinc-800 text-zinc-200 font-medium py-1.5 rounded-lg text-xs hover:bg-zinc-700 transition">
                     Save Custom Targets
@@ -74,36 +78,41 @@
                         <input type="number" step="0.1" id="weight" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
                     </div>
                     <div>
-                        <label class="block text-xs text-zinc-400 mb-1">Height (inches)</label>
-                        <input type="number" step="0.5" id="height" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600" oninput="calculateBodyFatLocally()">
+                        <label class="block text-xs text-zinc-400 mb-1">Height (Ft / In)</label>
+                        <div class="grid grid-cols-2 gap-1">
+                            <input type="number" id="heightFt" placeholder="ft" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
+                            <input type="number" id="heightIn" placeholder="in" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-3 gap-2">
                     <div>
-                        <label class="block text-xs text-zinc-400 mb-1">Chest (inches)</label>
+                        <label class="block text-xs text-zinc-400 mb-1">Chest (in)</label>
                         <input type="number" step="0.1" id="chest" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
                     </div>
                     <div>
-                        <label class="block text-xs text-zinc-400 mb-1">Arms (inches)</label>
+                        <label class="block text-xs text-zinc-400 mb-1">Arms (in)</label>
                         <input type="number" step="0.1" id="arms" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Waist (in)</label>
+                        <input type="number" step="0.1" id="waist" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600" oninput="calculateBodyFatLocally()">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs text-zinc-400 mb-1">Waist (inches)</label>
-                        <input type="number" step="0.1" id="waist" required class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600" oninput="calculateBodyFatLocally()">
-                    </div>
+                <!-- Extra fields for Body Fat calculation -->
+                <div class="grid grid-cols-2 gap-3 pt-1 border-t border-zinc-800">
                     <div>
                         <label class="block text-xs text-zinc-400 mb-1">Neck (inches)</label>
                         <input type="number" step="0.1" id="neck" placeholder="Optional" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 focus:outline-none focus:border-zinc-600" oninput="calculateBodyFatLocally()">
                     </div>
-                </div>
-
-                <div class="pt-1 border-t border-zinc-800 flex justify-between items-center text-xs">
-                    <span class="text-zinc-400">Est. Body Fat:</span>
-                    <span id="bfResult" class="font-medium text-zinc-400">-- %</span>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Est. Body Fat</label>
+                        <div id="bfResult" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-400 flex items-center">
+                            -- %
+                        </div>
+                    </div>
                 </div>
 
                 <button type="submit" id="submitBtn" class="w-full mt-2 bg-zinc-100 text-zinc-950 font-medium py-2.5 rounded-lg text-sm hover:bg-zinc-200 transition">
@@ -130,24 +139,22 @@
     </div>
 
     <script>
-        // Register Service Worker for PWA installation on Android
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js').catch(err => console.log('SW failed', err));
             });
         }
 
-        // Supabase Credentials Configured
         const SUPABASE_URL = 'https://ystdedlbfrtgddepszgu.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_fsK-pY6uGUqP2TUnpP953g_fg3Fd-i5';
 
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Load custom targets from LocalStorage
         let customTarget = JSON.parse(localStorage.getItem('userPhysiqueTarget')) || { 
-            weight: 70, 
-            height: 68, 
+            weight: 65, 
+            heightFt: 5,
+            heightIn: 8,
             chest: 40, 
             arms: 14.5, 
             waist: 30, 
@@ -156,12 +163,13 @@
 
         function initTargetsUI() {
             document.getElementById('targetWeight').value = customTarget.weight;
-            document.getElementById('targetHeight').value = customTarget.height || 68;
+            document.getElementById('targetHeightFt').value = customTarget.heightFt ?? 5;
+            document.getElementById('targetHeightIn').value = customTarget.heightIn ?? 8;
             document.getElementById('targetChest').value = customTarget.chest;
             document.getElementById('targetArms').value = customTarget.arms;
             document.getElementById('targetWaist').value = customTarget.waist;
             document.getElementById('targetBf').value = customTarget.bodyFat;
-            document.getElementById('headerTargetLabel').textContent = `Target: Custom Build (${customTarget.height}in, ${customTarget.bodyFat}% BF Goal)`;
+            document.getElementById('headerTargetLabel').textContent = `Target: ${customTarget.heightFt}'${customTarget.heightIn}" | ${customTarget.weight}kg | ${customTarget.bodyFat}% BF`;
         }
 
         function toggleTargetEditor() {
@@ -178,8 +186,9 @@
 
         function saveCustomTargets() {
             customTarget = {
-                weight: parseFloat(document.getElementById('targetWeight').value) || 70,
-                height: parseFloat(document.getElementById('targetHeight').value) || 68,
+                weight: parseFloat(document.getElementById('targetWeight').value) || 65,
+                heightFt: parseInt(document.getElementById('targetHeightFt').value) || 5,
+                heightIn: parseInt(document.getElementById('targetHeightIn').value) || 8,
                 chest: parseFloat(document.getElementById('targetChest').value) || 40,
                 arms: parseFloat(document.getElementById('targetArms').value) || 14.5,
                 waist: parseFloat(document.getElementById('targetWaist').value) || 30,
@@ -191,9 +200,9 @@
             loadData();
         }
 
-        function calculateBodyFat(waist, neck, height) {
-            if (waist && neck && height && waist > neck) {
-                let estBf = 86.010 * (Math.log10(waist - neck)) - 70.041 * (Math.log10(height)) + 36.76;
+        function calculateBodyFat(waist, neck, currentHeightInches) {
+            if (waist && neck && waist > neck && currentHeightInches) {
+                let estBf = 86.010 * (Math.log10(waist - neck)) - 70.041 * (Math.log10(currentHeightInches)) + 36.76;
                 if (estBf > 3 && estBf < 50) {
                     return parseFloat(estBf.toFixed(1));
                 }
@@ -204,16 +213,19 @@
         function calculateBodyFatLocally() {
             const waist = parseFloat(document.getElementById('waist').value);
             const neck = parseFloat(document.getElementById('neck').value);
-            const height = parseFloat(document.getElementById('height').value);
+            const ft = parseFloat(document.getElementById('heightFt').value) || 0;
+            const inch = parseFloat(document.getElementById('heightIn').value) || 0;
+            const totalInches = (ft * 12) + inch;
+
             const bfResult = document.getElementById('bfResult');
-            const bfVal = calculateBodyFat(waist, neck, height);
+            const bfVal = calculateBodyFat(waist, neck, totalInches);
 
             if (bfVal !== null) {
                 bfResult.textContent = bfVal + '%';
-                bfResult.className = 'font-medium text-emerald-400';
+                bfResult.className = 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-emerald-400 font-medium flex items-center';
             } else {
                 bfResult.textContent = '-- %';
-                bfResult.className = 'font-medium text-zinc-400';
+                bfResult.className = 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-400 flex items-center';
             }
         }
 
@@ -244,7 +256,8 @@
 
             const newEntry = {
                 weight: parseFloat(document.getElementById('weight').value),
-                height: parseFloat(document.getElementById('height').value),
+                height_ft: parseInt(document.getElementById('heightFt').value),
+                height_in: parseInt(document.getElementById('heightIn').value),
                 chest: parseFloat(document.getElementById('chest').value),
                 arms: parseFloat(document.getElementById('arms').value),
                 waist: parseFloat(document.getElementById('waist').value)
@@ -257,7 +270,6 @@
             } else {
                 this.reset();
                 document.getElementById('bfResult').textContent = '-- %';
-                document.getElementById('bfResult').className = 'font-medium text-zinc-400';
                 await loadData();
             }
             submitBtn.textContent = 'Save to Cloud & Compare';
@@ -266,28 +278,38 @@
         function renderRemaining(latest) {
             const container = document.getElementById('remainingStats');
             
-            const metrics = [
-                { key: 'weight', label: 'Weight', unit: 'kg' },
-                { key: 'height', label: 'Height', unit: 'in' },
-                { key: 'chest', label: 'Chest', unit: 'in' },
-                { key: 'arms', label: 'Arms', unit: 'in' },
-                { key: 'waist', label: 'Waist (Goal max)', unit: 'in' }
-            ];
+            const currentHeightStr = `${latest.height_ft || 5}'${latest.height_in || 0}"`;
+            const targetHeightStr = `${customTarget.heightFt}'${customTarget.heightIn}"`;
 
-            let htmlContent = metrics.map(m => {
-                const diff = (customTarget[m.key] - latest[m.key]).toFixed(1);
-                const color = diff > 0 ? 'text-amber-400' : 'text-emerald-400';
-                const text = diff > 0 ? `Need +${diff} ${m.unit} more` : `Target reached! (${Math.abs(diff)} ${m.unit} past target)`;
-                
-                return `
-                    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-                        <span class="text-zinc-400">${m.label}</span>
-                        <span class="font-medium ${color}">${text}</span>
-                    </div>
-                `;
-            }).join('');
+            const weightDiff = (customTarget.weight - latest.weight).toFixed(1);
+            const weightColor = weightDiff > 0 ? 'text-amber-400' : 'text-emerald-400';
+            const weightText = weightDiff > 0 ? `Need +${weightDiff} kg more` : `Target reached! (${Math.abs(weightDiff)} kg past target)`;
 
-            htmlContent += `
+            const chestDiff = (customTarget.chest - latest.chest).toFixed(1);
+            const chestColor = chestDiff > 0 ? 'text-amber-400' : 'text-emerald-400';
+            const chestText = chestDiff > 0 ? `Need +${chestDiff}" more` : `Goal met!`;
+
+            const armsDiff = (customTarget.arms - latest.arms).toFixed(1);
+            const armsColor = armsDiff > 0 ? 'text-amber-400' : 'text-emerald-400';
+            const armsText = armsDiff > 0 ? `Need +${armsDiff}" more` : `Goal met!`;
+
+            let htmlContent = `
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+                    <span class="text-zinc-400">Current Height</span>
+                    <span class="font-medium text-zinc-200">${currentHeightStr} (Goal: ${targetHeightStr})</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+                    <span class="text-zinc-400">Weight</span>
+                    <span class="font-medium ${weightColor}">${weightText}</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+                    <span class="text-zinc-400">Chest</span>
+                    <span class="font-medium ${chestColor}">${chestText}</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+                    <span class="text-zinc-400">Arms</span>
+                    <span class="font-medium ${armsColor}">${armsText}</span>
+                </div>
                 <div class="flex justify-between items-center pt-1">
                     <span class="text-zinc-400">Body Fat Goal</span>
                     <span class="font-medium text-emerald-400 text-xs">Target: ${customTarget.bodyFat}%</span>
@@ -303,12 +325,15 @@
 
             container.innerHTML = logs.slice().reverse().map(log => {
                 const dateStr = new Date(log.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const ht = `${log.height_ft || 5}'${log.height_in || 0}"`;
                 return `
                     <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800 space-y-1">
-                        <div class="text-xs font-semibold text-zinc-300">${dateStr}</div>
-                        <div class="grid grid-cols-5 gap-1 text-[11px] text-zinc-400">
+                        <div class="flex justify-between text-xs font-semibold text-zinc-300">
+                            <span>${dateStr}</span>
+                            <span class="text-zinc-500">Ht: ${ht}</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 text-xs text-zinc-400">
                             <div>Wt: <span class="text-zinc-200">${log.weight}kg</span></div>
-                            <div>Ht: <span class="text-zinc-200">${log.height}"</span></div>
                             <div>Ch: <span class="text-zinc-200">${log.chest}"</span></div>
                             <div>Ar: <span class="text-zinc-200">${log.arms}"</span></div>
                             <div>Ws: <span class="text-zinc-200">${log.waist}"</span></div>
